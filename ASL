@@ -1,0 +1,96 @@
+// ==UserScript==
+// @name        ASL Smartsign Trigger
+// @namespace   https://m3.cip.gatech.edu/d/ogoldbart3/
+// @description ASL Test 131001
+// @version     13
+// @include http://*/*
+// @include https://*/*
+// @include chrome://*/*
+// @grant metadata
+// @grant GM_xmlhttpRequest
+// @require  http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js
+// ==/UserScript==
+
+
+$(document).ready(function() {
+	$('body').append('<div id="lightbox" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);text-align:center;z-index:9999"></div>');
+  
+	console.log("ex3");
+
+	$("body").dblclick(function() {
+	    // Gets clicked on word (or selected text if text is selected)
+	    var t = '';
+	    var s = window.getSelection();
+	    if (s) {
+	    	if (s.isCollapsed) //nothing is selected. Only clicked.
+	        {
+	           
+	            s.modify('move', 'forward', 'character');
+	            s.modify('move', 'backward', 'word');
+	            s.modify('extend', 'forward', 'word');
+	           
+	            //s.modify('move', 'forward', 'character'); //clear selection
+	            console.log("happened " + s.toString() );
+	            
+	 			t = s.toString();
+	            
+	            s.modify('move', 'forward', 'character'); //clear selection
+	        }
+	        else 
+	        {
+	        	console.log("not happened " + s.toString() );
+	    		t = s.toString();
+	        }
+	        //console.log(t);
+	        //t = t.slice(0, t.length);
+	    }
+	    console.log('http://smartsign.imtc.gatech.edu/videos?keywords=' + t);
+
+		//Ajax call to database, input = t, fails in function, and won't return data
+		//however, data is visible, and succeeded in the GET command when viewed
+		//from within browser's network tab of console
+
+		var idArray;
+
+        GM_xmlhttpRequest({
+            method: "GET",
+            url: "http://smartsign.imtc.gatech.edu/videos?keywords=" + t,
+			onload: function(response) {
+				var data = $.parseJSON(response.responseText);
+
+				idArray= new Array(data.length);
+
+				for ( var i = 0; i < data.length; i++ ) {
+					idArray[i] = '<iframe width="420" height="345" src="http://www.youtube.com/embed/' + data[i]['id'] + '"> </iframe>';
+					console.log( idArray[i] );
+				}
+
+				console.log( data.length);
+				var heightstring = 20+ idArray.length*345;
+					
+				if ( idArray.length > 2 ) {
+					heightstring = 710;
+				}
+
+				var attrstring = 'width=450,height=' + heightstring + ',scrollbars=yes,resizable=no,toolbar=no,directories=no,location=no,menubar=no,status=no,left=0,top=0';
+				var htmlString = '';
+
+				for(var j=0; j<idArray.length; j++) {
+					htmlString += idArray[j];
+				}
+
+				$('#lightbox')
+					.html(htmlString)
+					.css('line-height', $(window).height()+'px')
+					.fadeIn('fast')
+					.live('click', function() {
+						$(this).fadeOut('fast');
+				});
+				console.log( htmlString );
+				console.log("running fine");
+			}
+
+        });
+
+
+	});
