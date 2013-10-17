@@ -32,7 +32,7 @@ $(document).ready(function() {
 	            //s.modify('move', 'forward', 'character'); //clear selection
 	            console.log("happened " + s.toString() );
 	            
-	 			t = s.toString();
+	 	    t = s.toString();
 	            
 	            s.modify('move', 'forward', 'character'); //clear selection
 	        }
