@@ -22,7 +22,7 @@ $(document).ready(function() {
 	    var t = '';
 	    var s = window.getSelection();
 	    if (s) {
-	    	if (s.isCollapsed) //nothing is selected. Only clicked.
+	    	if (s.isCollapsed) 
 	        {
 	           
 	            s.modify('move', 'forward', 'character');
