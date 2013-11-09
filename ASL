@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name        ASL Smartsign Trigger
 // @namespace   https://m3.cip.gatech.edu/d/ogoldbart3/
-// @description ASL Test 131001
-// @version     13
+// @description ASL Test 131018
+// @version     17
 // @include http://*/*
 // @include https://*/*
 // @include chrome://*/*
@@ -14,6 +14,7 @@
 
 $(document).ready(function() {
 	$('body').append('<div id="lightbox" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);text-align:center;z-index:9999"></div>');
+
   
 	console.log("ex3");
 
@@ -22,7 +23,7 @@ $(document).ready(function() {
 	    var t = '';
 	    var s = window.getSelection();
 	    if (s) {
-	    	if (s.isCollapsed) 
+	    	if (s.isCollapsed) //nothing is selected. Only clicked.
 	        {
 	           
 	            s.modify('move', 'forward', 'character');
@@ -32,15 +33,21 @@ $(document).ready(function() {
 	            //s.modify('move', 'forward', 'character'); //clear selection
 	            console.log("happened " + s.toString() );
 	            
-	 	    t = s.toString();
+	 			t = s.toString();
+	 			t=t.replace(/'s/g,"");
+	 			t=t.replace(/'d/g,"");
+	 			t = t.replace(/~/g," ");
+	 			t = t.replace(/_/g," ");
+                                t = t.replace(".", "");
+                                t=t.replace(",","");
 	            
 	            s.modify('move', 'forward', 'character'); //clear selection
 	        }
-	        else 
-	        {
-	        	console.log("not happened " + s.toString() );
-	    		t = s.toString();
-	        }
+	        //else 
+	        //{
+	       // 	console.log("not happened " + s.toString() );
+	    //		t = s.toString();
+	     //   }
 	        //console.log(t);
 	        //t = t.slice(0, t.length);
 	    }
@@ -50,46 +57,119 @@ $(document).ready(function() {
 		//however, data is visible, and succeeded in the GET command when viewed
 		//from within browser's network tab of console
 
-		var idArray;
+		if ( t !== "" ) {
+			var idArray;
 
-        GM_xmlhttpRequest({
-            method: "GET",
-            url: "http://smartsign.imtc.gatech.edu/videos?keywords=" + t,
-			onload: function(response) {
-				var data = $.parseJSON(response.responseText);
+	        GM_xmlhttpRequest({
+	            method: "GET",
+	            url: "http://smartsign.imtc.gatech.edu/videos?keywords=" + t,
+				onload: function(response) {
+					var data = $.parseJSON(response.responseText);
 
-				idArray= new Array(data.length);
+					idArray= new Array(data.length);
 
-				for ( var i = 0; i < data.length; i++ ) {
-					idArray[i] = '<iframe width="420" height="345" src="http://www.youtube.com/embed/' + data[i]['id'] + '"> </iframe>';
-					console.log( idArray[i] );
-				}
+					for ( var i = 0; i < data.length; i++ ) {
+						idArray[i] = '<iframe width="420" height="345" align:right src="http://www.youtube.com/embed/' + data[i]['id'] + '?rel=0"> </iframe>';
+						console.log( idArray[i] );
+					}
 
-				console.log( data.length);
-				var heightstring = 20+ idArray.length*345;
+					console.log( data.length);
 					
-				if ( idArray.length > 2 ) {
-					heightstring = 710;
+					var htmlString = '<div style="width:100%;position=absolute;text-align:right"> <div style="position:relative;left:72%;width:420px;text-align:left;">';
+
+					for(var j=0; j<idArray.length; j++) {
+						htmlString += idArray[j];
+					}
+
+					$('#lightbox')
+						.html(htmlString + '</div></div>')
+						.css({"line-height":($(window).height()*0)+"px", "overflow":"auto", "display":"block"})
+						.fadeIn('fast')
+						.live('click', function() {
+							$(this).fadeOut('fast');
+					});
+					//console.log( htmlString );
+					console.log("running fine");
+					console.log("T = " + t);
 				}
 
-				var attrstring = 'width=450,height=' + heightstring + ',scrollbars=yes,resizable=no,toolbar=no,directories=no,location=no,menubar=no,status=no,left=0,top=0';
-				var htmlString = '';
+	        });
 
-				for(var j=0; j<idArray.length; j++) {
-					htmlString += idArray[j];
+		}
+	});
+
+	$("body").click(function() {
+	    // Gets clicked on word (or selected text if text is selected)
+	    var t = '';
+	    var s = window.getSelection();
+	    if (s) {
+	    	if (s.isCollapsed) //nothing is selected. Only clicked.
+	        {
+	           
+	        }
+	        else 
+	        {
+	        	console.log("not happened " + s.toString() );
+
+	    		t = s.toString();
+
+	            t=t.trim();
+                t=t.replace(/'s/g,"");
+	 	t=t.replace(/'d/g,"");
+	 	t = t.replace(/~/g," ");
+	 	t = t.replace(/_/g," ");
+                t = t.replace(".", "");
+                t=t.replace(",","");
+               
+
+
+	        }
+	    }
+	    console.log('http://smartsign.imtc.gatech.edu/videos?keywords=' + t);
+
+		//Ajax call to database, input = t, fails in function, and won't return data
+		//however, data is visible, and succeeded in the GET command when viewed
+		//from within browser's network tab of console
+
+		if ( t !== "" ) {
+			var idArray;
+
+	        GM_xmlhttpRequest({
+	            method: "GET",
+	            url: "http://smartsign.imtc.gatech.edu/videos?keywords=" + t,
+				onload: function(response) {
+					var data = $.parseJSON(response.responseText);
+
+					idArray= new Array(data.length);
+
+					for ( var i = 0; i < data.length; i++ ) {
+						idArray[i] = '<iframe width="420" height="345" align:right src="http://www.youtube.com/embed/' + data[i]['id'] + '?rel=0"> </iframe>';
+						console.log( idArray[i] );
+					}
+
+					console.log( data.length);
+					
+					var htmlString = '<div style="width:100%;position=absolute;text-align:right"> <div style="position:relative;left:72%;width:420px;text-align:left;">';
+
+					for(var j=0; j<idArray.length; j++) {
+						htmlString += idArray[j];
+					}
+
+					$('#lightbox')
+						.html(htmlString + '</div></div>')
+						.css({"line-height":($(window).height()*0)+"px", "overflow":"auto", "display":"block"})
+						.fadeIn('fast')
+						.live('click', function() {
+							$(this).fadeOut('fast');
+					});
+					//console.log( htmlString );
+					console.log("running fine");
+					console.log("T = " + t);
 				}
 
-				$('#lightbox')
-					.html(htmlString)
-					.css('line-height', $(window).height()+'px')
-					.fadeIn('fast')
-					.live('click', function() {
-						$(this).fadeOut('fast');
-				});
-				console.log( htmlString );
-				console.log("running fine");
-			}
+	        });
 
-        });
+		}
+	});
 
 });
